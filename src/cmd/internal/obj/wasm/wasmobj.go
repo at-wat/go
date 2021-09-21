@@ -96,24 +96,29 @@ func rconv(r int) string {
 }
 
 var unaryDst = map[obj.As]bool{
-	ASet:          true,
-	ATee:          true,
-	ACall:         true,
-	ACallIndirect: true,
-	ACallImport:   true,
-	ABr:           true,
-	ABrIf:         true,
-	ABrTable:      true,
-	AI32Store:     true,
-	AI64Store:     true,
-	AF32Store:     true,
-	AF64Store:     true,
-	AI32Store8:    true,
-	AI32Store16:   true,
-	AI64Store8:    true,
-	AI64Store16:   true,
-	AI64Store32:   true,
-	ACALLNORESUME: true,
+	ASet:             true,
+	ATee:             true,
+	ACall:            true,
+	ACallIndirect:    true,
+	ACallImport:      true,
+	ABr:              true,
+	ABrIf:            true,
+	ABrTable:         true,
+	AI32Store:        true,
+	AI64Store:        true,
+	AF32Store:        true,
+	AF64Store:        true,
+	AI32Store8:       true,
+	AI32Store16:      true,
+	AI64Store8:       true,
+	AI64Store16:      true,
+	AI64Store32:      true,
+	AV128Store:       true,
+	AV128Store8Lane:  true,
+	AV128Store16Lane: true,
+	AV128Store32Lane: true,
+	AV128Store64Lane: true,
+	ACALLNORESUME:    true,
 }
 
 var Linkwasm = obj.LinkArch{
@@ -562,7 +567,7 @@ func preprocess(ctxt *obj.Link, s *obj.LSym, newprog obj.ProgAlloc) {
 				}
 			}
 
-		case AI32Load, AI64Load, AF32Load, AF64Load, AI32Load8S, AI32Load8U, AI32Load16S, AI32Load16U, AI64Load8S, AI64Load8U, AI64Load16S, AI64Load16U, AI64Load32S, AI64Load32U:
+		case AI32Load, AI64Load, AF32Load, AF64Load, AI32Load8S, AI32Load8U, AI32Load16S, AI32Load16U, AI64Load8S, AI64Load8U, AI64Load16S, AI64Load16U, AI64Load32S, AI64Load32U, AV128Load, AV128Load8x8S, AV128Load8x8U, AV128Load16x4S, AV128Load16x4U, AV128Load32x2S, AV128Load32x2U, AV128Load8Splat, AV128Load16Splat, AV128Load32Splat, AV128Load64Splat, AV128Load8Lane, AV128Load16Lane, AV128Load32Lane, AV128Load64Lane, AV128Load32Zero, AV128Load64Zero:
 			if p.From.Type == obj.TYPE_MEM {
 				as := p.As
 				from := p.From
@@ -991,7 +996,7 @@ func assemble(ctxt *obj.Link, s *obj.LSym, newprog obj.ProgAlloc) {
 				updateLocalSP(w)
 			}
 
-		case AI32Const, AI64Const:
+		case AI32Const, AI64Const, AV128Const:
 			if p.From.Name == obj.NAME_EXTERN {
 				r := obj.Addrel(s)
 				r.Siz = 1 // actually variable sized
@@ -1013,7 +1018,7 @@ func assemble(ctxt *obj.Link, s *obj.LSym, newprog obj.ProgAlloc) {
 			binary.LittleEndian.PutUint64(b, math.Float64bits(p.From.Val.(float64)))
 			w.Write(b)
 
-		case AI32Load, AI64Load, AF32Load, AF64Load, AI32Load8S, AI32Load8U, AI32Load16S, AI32Load16U, AI64Load8S, AI64Load8U, AI64Load16S, AI64Load16U, AI64Load32S, AI64Load32U:
+		case AI32Load, AI64Load, AF32Load, AF64Load, AI32Load8S, AI32Load8U, AI32Load16S, AI32Load16U, AI64Load8S, AI64Load8U, AI64Load16S, AI64Load16U, AI64Load32S, AI64Load32U, AV128Load, AV128Load8Splat, AV128Load16Splat, AV128Load32Splat, AV128Load64Splat, AV128Load32Zero, AV128Load64Zero:
 			if p.From.Offset < 0 {
 				panic("negative offset for *Load")
 			}
@@ -1026,7 +1031,7 @@ func assemble(ctxt *obj.Link, s *obj.LSym, newprog obj.ProgAlloc) {
 			writeUleb128(w, align(p.As))
 			writeUleb128(w, uint64(p.From.Offset))
 
-		case AI32Store, AI64Store, AF32Store, AF64Store, AI32Store8, AI32Store16, AI64Store8, AI64Store16, AI64Store32:
+		case AI32Store, AI64Store, AF32Store, AF64Store, AI32Store8, AI32Store16, AI64Store8, AI64Store16, AI64Store32, AV128Store:
 			if p.To.Offset < 0 {
 				panic("negative offset")
 			}
@@ -1068,9 +1073,12 @@ func writeOpcode(w *bytes.Buffer, as obj.As) {
 		w.WriteByte(byte(as - ALocalGet + 0x20))
 	case as < AI32TruncSatF32S:
 		w.WriteByte(byte(as - AI32Load + 0x28))
-	case as < ALast:
+	case as < AV128Load:
 		w.WriteByte(0xFC)
 		w.WriteByte(byte(as - AI32TruncSatF32S + 0x00))
+	case as < ALast:
+		w.WriteByte(0xFD)
+		writeUleb128(w, uint64(as-AV128Load+0x00))
 	default:
 		panic(fmt.Sprintf("unexpected assembler op: %s", as))
 	}
@@ -1079,10 +1087,11 @@ func writeOpcode(w *bytes.Buffer, as obj.As) {
 type valueType byte
 
 const (
-	i32 valueType = 0x7F
-	i64 valueType = 0x7E
-	f32 valueType = 0x7D
-	f64 valueType = 0x7C
+	i32  valueType = 0x7F
+	i64  valueType = 0x7E
+	f32  valueType = 0x7D
+	f64  valueType = 0x7C
+	v128 valueType = 0x7B
 )
 
 func regType(reg int16) valueType {
@@ -1102,14 +1111,16 @@ func regType(reg int16) valueType {
 
 func align(as obj.As) uint64 {
 	switch as {
-	case AI32Load8S, AI32Load8U, AI64Load8S, AI64Load8U, AI32Store8, AI64Store8:
+	case AI32Load8S, AI32Load8U, AI64Load8S, AI64Load8U, AI32Store8, AI64Store8, AV128Load8Splat:
 		return 0
-	case AI32Load16S, AI32Load16U, AI64Load16S, AI64Load16U, AI32Store16, AI64Store16:
+	case AI32Load16S, AI32Load16U, AI64Load16S, AI64Load16U, AI32Store16, AI64Store16, AV128Load16Splat:
 		return 1
-	case AI32Load, AF32Load, AI64Load32S, AI64Load32U, AI32Store, AF32Store, AI64Store32:
+	case AI32Load, AF32Load, AI64Load32S, AI64Load32U, AI32Store, AF32Store, AI64Store32, AV128Load32Splat, AV128Load32Zero:
 		return 2
-	case AI64Load, AF64Load, AI64Store, AF64Store:
+	case AI64Load, AF64Load, AI64Store, AF64Store, AV128Load64Splat, AV128Load64Zero:
 		return 3
+	case AV128Load, AV128Store, AV128Load8x8S, AV128Load8x8U, AV128Load16x4S, AV128Load16x4U, AV128Load32x2S, AV128Load32x2U:
+		return 4
 	default:
 		panic("align: bad op")
 	}

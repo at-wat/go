@@ -61,6 +61,15 @@ var regNamesWasm = []string{
 	"F30",
 	"F31",
 
+	"V0",
+	"V1",
+	"V2",
+	"V3",
+	"V4",
+	"V5",
+	"V6",
+	"V7",
+
 	"SP",
 	"g",
 
@@ -93,6 +102,7 @@ func init() {
 		gp     = buildReg("R0 R1 R2 R3 R4 R5 R6 R7 R8 R9 R10 R11 R12 R13 R14 R15")
 		fp32   = buildReg("F0 F1 F2 F3 F4 F5 F6 F7 F8 F9 F10 F11 F12 F13 F14 F15")
 		fp64   = buildReg("F16 F17 F18 F19 F20 F21 F22 F23 F24 F25 F26 F27 F28 F29 F30 F31")
+		vp128  = buildReg("V0 V1 V2 V3 V4 V5 V6 V7")
 		gpsp   = gp | buildReg("SP")
 		gpspsb = gpsp | buildReg("SB")
 		// The "registers", which are actually local variables, can get clobbered
@@ -102,24 +112,31 @@ func init() {
 
 	// Common regInfo
 	var (
-		gp01      = regInfo{inputs: nil, outputs: []regMask{gp}}
-		gp11      = regInfo{inputs: []regMask{gpsp}, outputs: []regMask{gp}}
-		gp21      = regInfo{inputs: []regMask{gpsp, gpsp}, outputs: []regMask{gp}}
-		gp31      = regInfo{inputs: []regMask{gpsp, gpsp, gpsp}, outputs: []regMask{gp}}
-		fp32_01   = regInfo{inputs: nil, outputs: []regMask{fp32}}
-		fp32_11   = regInfo{inputs: []regMask{fp32}, outputs: []regMask{fp32}}
-		fp32_21   = regInfo{inputs: []regMask{fp32, fp32}, outputs: []regMask{fp32}}
-		fp32_21gp = regInfo{inputs: []regMask{fp32, fp32}, outputs: []regMask{gp}}
-		fp64_01   = regInfo{inputs: nil, outputs: []regMask{fp64}}
-		fp64_11   = regInfo{inputs: []regMask{fp64}, outputs: []regMask{fp64}}
-		fp64_21   = regInfo{inputs: []regMask{fp64, fp64}, outputs: []regMask{fp64}}
-		fp64_21gp = regInfo{inputs: []regMask{fp64, fp64}, outputs: []regMask{gp}}
-		gpload    = regInfo{inputs: []regMask{gpspsb, 0}, outputs: []regMask{gp}}
-		gpstore   = regInfo{inputs: []regMask{gpspsb, gpsp, 0}}
-		fp32load  = regInfo{inputs: []regMask{gpspsb, 0}, outputs: []regMask{fp32}}
-		fp32store = regInfo{inputs: []regMask{gpspsb, fp32, 0}}
-		fp64load  = regInfo{inputs: []regMask{gpspsb, 0}, outputs: []regMask{fp64}}
-		fp64store = regInfo{inputs: []regMask{gpspsb, fp64, 0}}
+		gp01       = regInfo{inputs: nil, outputs: []regMask{gp}}
+		gp11       = regInfo{inputs: []regMask{gpsp}, outputs: []regMask{gp}}
+		gp21       = regInfo{inputs: []regMask{gpsp, gpsp}, outputs: []regMask{gp}}
+		gp31       = regInfo{inputs: []regMask{gpsp, gpsp, gpsp}, outputs: []regMask{gp}}
+		fp32_01    = regInfo{inputs: nil, outputs: []regMask{fp32}}
+		fp32_11    = regInfo{inputs: []regMask{fp32}, outputs: []regMask{fp32}}
+		fp32_21    = regInfo{inputs: []regMask{fp32, fp32}, outputs: []regMask{fp32}}
+		fp32_21gp  = regInfo{inputs: []regMask{fp32, fp32}, outputs: []regMask{gp}}
+		fp64_01    = regInfo{inputs: nil, outputs: []regMask{fp64}}
+		fp64_11    = regInfo{inputs: []regMask{fp64}, outputs: []regMask{fp64}}
+		fp64_21    = regInfo{inputs: []regMask{fp64, fp64}, outputs: []regMask{fp64}}
+		fp64_21gp  = regInfo{inputs: []regMask{fp64, fp64}, outputs: []regMask{gp}}
+		vp128_01   = regInfo{inputs: nil, outputs: []regMask{vp128}}
+		vp128_11   = regInfo{inputs: []regMask{vp128}, outputs: []regMask{vp128}}
+		vp128_11gp = regInfo{inputs: []regMask{vp128}, outputs: []regMask{gp}}
+		vp128_21   = regInfo{inputs: []regMask{vp128, vp128}, outputs: []regMask{vp128}}
+		vp128_31   = regInfo{inputs: []regMask{vp128, vp128, vp128}, outputs: []regMask{vp128}}
+		gpload     = regInfo{inputs: []regMask{gpspsb, 0}, outputs: []regMask{gp}}
+		gpstore    = regInfo{inputs: []regMask{gpspsb, gpsp, 0}}
+		fp32load   = regInfo{inputs: []regMask{gpspsb, 0}, outputs: []regMask{fp32}}
+		fp32store  = regInfo{inputs: []regMask{gpspsb, fp32, 0}}
+		fp64load   = regInfo{inputs: []regMask{gpspsb, 0}, outputs: []regMask{fp64}}
+		fp64store  = regInfo{inputs: []regMask{gpspsb, fp64, 0}}
+		vp128load  = regInfo{inputs: []regMask{gpspsb, 0}, outputs: []regMask{vp128}}
+		vp128store = regInfo{inputs: []regMask{gpspsb, vp128, 0}}
 	)
 
 	var WasmOps = []opData{
@@ -261,6 +278,243 @@ func init() {
 		{name: "I32Rotl", asm: "I32Rotl", argLength: 2, reg: gp21, typ: "Int32"},     // rotl(arg0, arg1)
 		{name: "I64Rotl", asm: "I64Rotl", argLength: 2, reg: gp21, typ: "Int64"},     // rotl(arg0, arg1)
 		{name: "I64Popcnt", asm: "I64Popcnt", argLength: 1, reg: gp11, typ: "Int64"}, // popcnt(arg0)
+
+		{name: "V128Load", asm: "V128Load", argLength: 2, reg: vp128load, aux: "Int64", typ: "Int128"},
+		{name: "V128Load8x8S", asm: "V128Load8x8S", argLength: 2, reg: vp128load, aux: "Int64", typ: "Int128"},
+		{name: "V128Load8x8U", asm: "V128Load8x8U", argLength: 2, reg: vp128load, aux: "Int64", typ: "Int128"},
+		{name: "V128Load16x4S", asm: "V128Load16x4S", argLength: 2, reg: vp128load, aux: "Int64", typ: "Int128"},
+		{name: "V128Load16x4U", asm: "V128Load16x4U", argLength: 2, reg: vp128load, aux: "Int64", typ: "Int128"},
+		{name: "V128Load32x2S", asm: "V128Load32x2S", argLength: 2, reg: vp128load, aux: "Int64", typ: "Int128"},
+		{name: "V128Load32x2U", asm: "V128Load32x2U", argLength: 2, reg: vp128load, aux: "Int64", typ: "Int128"},
+		{name: "V128Load8Splat", asm: "V128Load8Splat", argLength: 2, reg: vp128load, aux: "Int64", typ: "Int128"},
+		{name: "V128Load16Splat", asm: "V128Load16Splat", argLength: 2, reg: vp128load, aux: "Int64", typ: "Int128"},
+		{name: "V128Load32Splat", asm: "V128Load32Splat", argLength: 2, reg: vp128load, aux: "Int64", typ: "Int128"},
+		{name: "V128Load64Splat", asm: "V128Load64Splat", argLength: 2, reg: vp128load, aux: "Int64", typ: "Int128"},
+
+		{name: "V128Store", asm: "V128Store", argLength: 2, reg: vp128store, aux: "Int64", typ: "Mem"},
+
+		{name: "V128Const", reg: vp128_01, aux: "Int128", rematerializeable: true, typ: "Int128"}, // returns the constant integer aux
+		// Shuffle
+		{name: "I8x16Swizzle", asm: "I8x16Swizzle", argLength: 2, reg: vp128_21, typ: "Int128"},
+		{name: "I8x16Splat", aux: "Int64", reg: regInfo{inputs: []regMask{gp}, outputs: []regMask{vp128}}, typ: "Int128"},
+		{name: "I16x8Splat", aux: "Int64", reg: regInfo{inputs: []regMask{gp}, outputs: []regMask{vp128}}, typ: "Int128"},
+		{name: "I32x4Splat", aux: "Int64", reg: regInfo{inputs: []regMask{gp}, outputs: []regMask{vp128}}, typ: "Int128"},
+		{name: "I64x2Splat", aux: "Int64", reg: regInfo{inputs: []regMask{gp}, outputs: []regMask{vp128}}, typ: "Int128"},
+		{name: "F32x4Splat", aux: "Float32", reg: regInfo{inputs: []regMask{fp32}, outputs: []regMask{vp128}}, typ: "Int128"},
+		{name: "F64x2Splat", aux: "Float64", reg: regInfo{inputs: []regMask{fp64}, outputs: []regMask{vp128}}, typ: "Int128"},
+		// I8x16ExtractLaneS
+		// I8x16ExtractLaneU
+		// I8x16ReplaceLane
+		// I16x8ExtractLaneS
+		// I16x8ExtractLaneU
+		// I16x8ReplaceLane
+		// I32x4ExtractLane
+		// I32x4ReplaceLane
+		// I64x2ExtractLane
+		// I64x2ReplaceLane
+		// F32x4ExtractLane
+		// F32x4ReplaceLane
+		// F64x2ExtractLane
+		// F64x2ReplaceLane
+		{name: "I8x16Eq", asm: "I8x16Eq", argLength: 2, reg: vp128_21, typ: "Int128"},
+		{name: "I8x16Ne", asm: "I8x16Ne", argLength: 2, reg: vp128_21, typ: "Int128"},
+		{name: "I8x16LtS", asm: "I8x16LtS", argLength: 2, reg: vp128_21, typ: "Int128"},
+		{name: "I8x16LtU", asm: "I8x16LtU", argLength: 2, reg: vp128_21, typ: "Int128"},
+		{name: "I8x16GtS", asm: "I8x16GtS", argLength: 2, reg: vp128_21, typ: "Int128"},
+		{name: "I8x16GtU", asm: "I8x16GtU", argLength: 2, reg: vp128_21, typ: "Int128"},
+		{name: "I8x16LeS", asm: "I8x16LeS", argLength: 2, reg: vp128_21, typ: "Int128"},
+		{name: "I8x16LeU", asm: "I8x16LeU", argLength: 2, reg: vp128_21, typ: "Int128"},
+		{name: "I8x16GeS", asm: "I8x16GeS", argLength: 2, reg: vp128_21, typ: "Int128"},
+		{name: "I8x16GeU", asm: "I8x16GeU", argLength: 2, reg: vp128_21, typ: "Int128"},
+		{name: "I16x8Eq", asm: "I16x8Eq", argLength: 2, reg: vp128_21, typ: "Int128"},
+		{name: "I16x8Ne", asm: "I16x8Ne", argLength: 2, reg: vp128_21, typ: "Int128"},
+		{name: "I16x8LtS", asm: "I16x8LtS", argLength: 2, reg: vp128_21, typ: "Int128"},
+		{name: "I16x8LtU", asm: "I16x8LtU", argLength: 2, reg: vp128_21, typ: "Int128"},
+		{name: "I16x8GtS", asm: "I16x8GtS", argLength: 2, reg: vp128_21, typ: "Int128"},
+		{name: "I16x8GtU", asm: "I16x8GtU", argLength: 2, reg: vp128_21, typ: "Int128"},
+		{name: "I16x8LeS", asm: "I16x8LeS", argLength: 2, reg: vp128_21, typ: "Int128"},
+		{name: "I16x8LeU", asm: "I16x8LeU", argLength: 2, reg: vp128_21, typ: "Int128"},
+		{name: "I16x8GeS", asm: "I16x8GeS", argLength: 2, reg: vp128_21, typ: "Int128"},
+		{name: "I16x8GeU", asm: "I16x8GeU", argLength: 2, reg: vp128_21, typ: "Int128"},
+		{name: "I32x4Eq", asm: "I32x4Eq", argLength: 2, reg: vp128_21, typ: "Int128"},
+		{name: "I32x4Ne", asm: "I32x4Ne", argLength: 2, reg: vp128_21, typ: "Int128"},
+		{name: "I32x4LtS", asm: "I32x4LtS", argLength: 2, reg: vp128_21, typ: "Int128"},
+		{name: "I32x4LtU", asm: "I32x4LtU", argLength: 2, reg: vp128_21, typ: "Int128"},
+		{name: "I32x4GtS", asm: "I32x4GtS", argLength: 2, reg: vp128_21, typ: "Int128"},
+		{name: "I32x4GtU", asm: "I32x4GtU", argLength: 2, reg: vp128_21, typ: "Int128"},
+		{name: "I32x4LeS", asm: "I32x4LeS", argLength: 2, reg: vp128_21, typ: "Int128"},
+		{name: "I32x4LeU", asm: "I32x4LeU", argLength: 2, reg: vp128_21, typ: "Int128"},
+		{name: "I32x4GeS", asm: "I32x4GeS", argLength: 2, reg: vp128_21, typ: "Int128"},
+		{name: "I32x4GeU", asm: "I32x4GeU", argLength: 2, reg: vp128_21, typ: "Int128"},
+		{name: "F32x4Eq", asm: "F32x4Eq", argLength: 2, reg: vp128_21, typ: "Int128"},
+		{name: "F32x4Ne", asm: "F32x4Ne", argLength: 2, reg: vp128_21, typ: "Int128"},
+		{name: "F32x4Lt", asm: "F32x4Lt", argLength: 2, reg: vp128_21, typ: "Int128"},
+		{name: "F32x4Gt", asm: "F32x4Gt", argLength: 2, reg: vp128_21, typ: "Int128"},
+		{name: "F32x4Le", asm: "F32x4Le", argLength: 2, reg: vp128_21, typ: "Int128"},
+		{name: "F32x4Ge", asm: "F32x4Ge", argLength: 2, reg: vp128_21, typ: "Int128"},
+		{name: "F64x2Eq", asm: "F64x2Eq", argLength: 2, reg: vp128_21, typ: "Int128"},
+		{name: "F64x2Ne", asm: "F64x2Ne", argLength: 2, reg: vp128_21, typ: "Int128"},
+		{name: "F64x2Lt", asm: "F64x2Lt", argLength: 2, reg: vp128_21, typ: "Int128"},
+		{name: "F64x2Gt", asm: "F64x2Gt", argLength: 2, reg: vp128_21, typ: "Int128"},
+		{name: "F64x2Le", asm: "F64x2Le", argLength: 2, reg: vp128_21, typ: "Int128"},
+		{name: "F64x2Ge", asm: "F64x2Ge", argLength: 2, reg: vp128_21, typ: "Int128"},
+
+		{name: "V128Not", asm: "V128Not", argLength: 1, reg: vp128_11, typ: "Int128"},
+		{name: "V128And", asm: "V128And", argLength: 2, reg: vp128_21, typ: "Int128"},
+		{name: "V128Andnot", asm: "V128Andnot", argLength: 2, reg: vp128_21, typ: "Int128"},
+		{name: "V128Or", asm: "V128Or", argLength: 2, reg: vp128_21, typ: "Int128"},
+		{name: "V128Xor", asm: "V128Xor", argLength: 2, reg: vp128_21, typ: "Int128"},
+		{name: "V128Bitselect", asm: "V128Bitselect", argLength: 3, reg: vp128_31, typ: "Int128"},
+		{name: "V128AnyTrue", asm: "V128AnyTrue", argLength: 1, reg: vp128_11gp, typ: "Int128"},
+		// V128Load8Lane
+		// V128Load16Lane
+		// V128Load32Lane
+		// V128Load64Lane
+		// V128Store8Lane
+		// V128Store16Lane
+		// V128Store32Lane
+		// V128Store64Lane
+		// V128Load32Zero
+		// V128Load64Zero
+		{name: "F32x4DemoteF64x2Zero", asm: "F32x4DemoteF64x2Zero", argLength: 1, reg: vp128_11, typ: "Int128"},
+		{name: "F64x2PromoteLowF32x4", asm: "F64x2PromoteLowF32x4", argLength: 1, reg: vp128_11, typ: "Int128"},
+		{name: "I8x16Abs", asm: "I8x16Abs", argLength: 1, reg: vp128_11, typ: "Int128"},
+		{name: "I8x16Neg", asm: "I8x16Neg", argLength: 1, reg: vp128_11, typ: "Int128"},
+		{name: "I8x16Popcnt", asm: "I8x16Popcnt", argLength: 1, reg: vp128_11, typ: "Int128"},
+		{name: "I8x16AllTrue", asm: "I8x16AllTrue", argLength: 1, reg: vp128_11gp, typ: "Int128"},
+		{name: "I8x16Bitmask", asm: "I8x16Bitmask", argLength: 1, reg: vp128_11gp, typ: "Int128"},
+		{name: "I8x16NarrowI16x8S", asm: "I8x16NarrowI16x8S", argLength: 2, reg: vp128_21, typ: "Int128"},
+		{name: "I8x16NarrowI16x8U", asm: "I8x16NarrowI16x8U", argLength: 2, reg: vp128_21, typ: "Int128"},
+		{name: "F32x4Ceil", asm: "F32x4Ceil", argLength: 1, reg: vp128_11, typ: "Int128"},
+		{name: "F32x4Floor", asm: "F32x4Floor", argLength: 1, reg: vp128_11, typ: "Int128"},
+		{name: "F32x4Trunc", asm: "F32x4Trunc", argLength: 1, reg: vp128_11, typ: "Int128"},
+		{name: "F32x4Nearest", asm: "F32x4Nearest", argLength: 1, reg: vp128_11, typ: "Int128"},
+		// I8x16Shl
+		// I8x16ShrS
+		// I8x16ShrU
+		{name: "I8x16Add", asm: "I8x16Add", argLength: 2, reg: vp128_21, typ: "Int128"},
+		{name: "I8x16AddSatS", asm: "I8x16AddSatS", argLength: 2, reg: vp128_21, typ: "Int128"},
+		{name: "I8x16AddSatU", asm: "I8x16AddSatU", argLength: 2, reg: vp128_21, typ: "Int128"},
+		{name: "I8x16Sub", asm: "I8x16Sub", argLength: 2, reg: vp128_21, typ: "Int128"},
+		{name: "I8x16SubSatS", asm: "I8x16SubSatS", argLength: 2, reg: vp128_21, typ: "Int128"},
+		{name: "I8x16SubSatU", asm: "I8x16SubSatU", argLength: 2, reg: vp128_21, typ: "Int128"},
+		{name: "F64x2Ceil", asm: "F64x2Ceil", argLength: 1, reg: vp128_11, typ: "Int128"},
+		{name: "F64x2Floor", asm: "F64x2Floor", argLength: 1, reg: vp128_11, typ: "Int128"},
+		{name: "I8x16MinS", asm: "I8x16MinS", argLength: 2, reg: vp128_21, typ: "Int128"},
+		{name: "I8x16MinU", asm: "I8x16MinU", argLength: 2, reg: vp128_21, typ: "Int128"},
+		{name: "I8x16MaxS", asm: "I8x16MaxS", argLength: 2, reg: vp128_21, typ: "Int128"},
+		{name: "I8x16MaxU", asm: "I8x16MaxU", argLength: 2, reg: vp128_21, typ: "Int128"},
+		{name: "F64x2Trunc", asm: "F64x2Trunc", argLength: 1, reg: vp128_11, typ: "Int128"},
+		{name: "I8x16AvgrU", asm: "I8x16AvgrU", argLength: 2, reg: vp128_21, typ: "Int128"},
+		{name: "I16x8ExtaddPairwiseI8x16S", asm: "I16x8ExtaddPairwiseI8x16S", argLength: 1, reg: vp128_11, typ: "Int128"},
+		{name: "I16x8ExtaddPairwiseI8x16U", asm: "I16x8ExtaddPairwiseI8x16U", argLength: 1, reg: vp128_11, typ: "Int128"},
+		{name: "I32x4ExtaddPairwiseI16x8S", asm: "I32x4ExtaddPairwiseI16x8S", argLength: 1, reg: vp128_11, typ: "Int128"},
+		{name: "I32x4ExtaddPairwiseI16x8U", asm: "I32x4ExtaddPairwiseI16x8U", argLength: 1, reg: vp128_11, typ: "Int128"},
+		{name: "I16x8Abs", asm: "I16x8Abs", argLength: 1, reg: vp128_11, typ: "Int128"},
+		{name: "I16x8Neg", asm: "I16x8Neg", argLength: 1, reg: vp128_11, typ: "Int128"},
+		{name: "I16x8Q15mulrSatS", asm: "I16x8Q15mulrSatS", argLength: 2, reg: vp128_21, typ: "Int128"},
+		{name: "I16x8AllTrue", asm: "I16x8AllTrue", argLength: 1, reg: vp128_11gp, typ: "Int128"},
+		{name: "I16x8Bitmask", asm: "I16x8Bitmask", argLength: 1, reg: vp128_11gp, typ: "Int128"},
+		{name: "I16x8NarrowI32x4S", asm: "I16x8NarrowI32x4S", argLength: 2, reg: vp128_21, typ: "Int128"},
+		{name: "I16x8NarrowI32x4U", asm: "I16x8NarrowI32x4U", argLength: 2, reg: vp128_21, typ: "Int128"},
+		{name: "I16x8ExtendLowI8x16S", asm: "I16x8ExtendLowI8x16S", argLength: 1, reg: vp128_11, typ: "Int128"},
+		{name: "I16x8ExtendHighI8x16S", asm: "I16x8ExtendHighI8x16S", argLength: 1, reg: vp128_11, typ: "Int128"},
+		{name: "I16x8ExtendLowI8x16U", asm: "I16x8ExtendLowI8x16U", argLength: 1, reg: vp128_11, typ: "Int128"},
+		{name: "I16x8ExtendHighI8x16U", asm: "I16x8ExtendHighI8x16U", argLength: 1, reg: vp128_11, typ: "Int128"},
+		// I16x8Shl
+		// I16x8ShrS
+		// I16x8ShrU
+		{name: "I16x8Add", asm: "I16x8Add", argLength: 2, reg: vp128_21, typ: "Int128"},
+		{name: "I16x8AddSatS", asm: "I16x8AddSatS", argLength: 2, reg: vp128_21, typ: "Int128"},
+		{name: "I16x8AddSatU", asm: "I16x8AddSatU", argLength: 2, reg: vp128_21, typ: "Int128"},
+		{name: "I16x8Sub", asm: "I16x8Sub", argLength: 2, reg: vp128_21, typ: "Int128"},
+		{name: "I16x8SubSatS", asm: "I16x8SubSatS", argLength: 2, reg: vp128_21, typ: "Int128"},
+		{name: "I16x8SubSatU", asm: "I16x8SubSatU", argLength: 2, reg: vp128_21, typ: "Int128"},
+		{name: "F64x2Nearest", asm: "F64x2Nearest", argLength: 1, reg: vp128_11, typ: "Int128"},
+		{name: "I16x8Mul", asm: "I16x8Mul", argLength: 2, reg: vp128_21, typ: "Int128"},
+		{name: "I16x8MinS", asm: "I16x8MinS", argLength: 2, reg: vp128_21, typ: "Int128"},
+		{name: "I16x8MinU", asm: "I16x8MinU", argLength: 2, reg: vp128_21, typ: "Int128"},
+		{name: "I16x8MaxS", asm: "I16x8MaxS", argLength: 2, reg: vp128_21, typ: "Int128"},
+		{name: "I16x8MaxU", asm: "I16x8MaxU", argLength: 2, reg: vp128_21, typ: "Int128"},
+		{name: "I16x8AvgrU", asm: "I16x8AvgrU", argLength: 2, reg: vp128_21, typ: "Int128"},
+		{name: "I16x8ExtmulLowI8x16S", asm: "I16x8ExtmulLowI8x16S", argLength: 2, reg: vp128_21, typ: "Int128"},
+		{name: "I16x8ExtmulHighI8x16S", asm: "I16x8ExtmulHighI8x16S", argLength: 2, reg: vp128_21, typ: "Int128"},
+		{name: "I16x8ExtmulLowI8x16U", asm: "I16x8ExtmulLowI8x16U", argLength: 2, reg: vp128_21, typ: "Int128"},
+		{name: "I16x8ExtmulHighI8x16U", asm: "I16x8ExtmulHighI8x16U", argLength: 2, reg: vp128_21, typ: "Int128"},
+		{name: "I32x4Abs", asm: "I32x4Abs", argLength: 1, reg: vp128_11, typ: "Int128"},
+		{name: "I32x4Neg", asm: "I32x4Neg", argLength: 1, reg: vp128_11, typ: "Int128"},
+		{name: "I32x4AllTrue", asm: "I32x4AllTrue", argLength: 1, reg: vp128_11gp, typ: "Int128"},
+		{name: "I32x4Bitmask", asm: "I32x4Bitmask", argLength: 1, reg: vp128_11gp, typ: "Int128"},
+		{name: "I32x4ExtendLowI16x8S", asm: "I32x4ExtendLowI16x8S", argLength: 1, reg: vp128_11, typ: "Int128"},
+		{name: "I32x4ExtendHighI16x8S", asm: "I32x4ExtendHighI16x8S", argLength: 1, reg: vp128_11, typ: "Int128"},
+		{name: "I32x4ExtendLowI16x8U", asm: "I32x4ExtendLowI16x8U", argLength: 1, reg: vp128_11, typ: "Int128"},
+		{name: "I32x4ExtendHighI16x8U", asm: "I32x4ExtendHighI16x8U", argLength: 1, reg: vp128_11, typ: "Int128"},
+		// I32x4Shl
+		// I32x4ShrS
+		// I32x4ShrU
+		{name: "I32x4Add", asm: "I32x4Add", argLength: 2, reg: vp128_21, typ: "Int128"},
+		{name: "I32x4Sub", asm: "I32x4Sub", argLength: 2, reg: vp128_21, typ: "Int128"},
+		{name: "I32x4Mul", asm: "I32x4Mul", argLength: 2, reg: vp128_21, typ: "Int128"},
+		{name: "I32x4MinS", asm: "I32x4MinS", argLength: 2, reg: vp128_21, typ: "Int128"},
+		{name: "I32x4MinU", asm: "I32x4MinU", argLength: 2, reg: vp128_21, typ: "Int128"},
+		{name: "I32x4MaxS", asm: "I32x4MaxS", argLength: 2, reg: vp128_21, typ: "Int128"},
+		{name: "I32x4MaxU", asm: "I32x4MaxU", argLength: 2, reg: vp128_21, typ: "Int128"},
+		{name: "I32x4DotI16x8S", asm: "I32x4DotI16x8S", argLength: 2, reg: vp128_21, typ: "Int128"},
+		{name: "I32x4ExtmulLowI16x8S", asm: "I32x4ExtmulLowI16x8S", argLength: 2, reg: vp128_21, typ: "Int128"},
+		{name: "I32x4ExtmulHighI16x8S", asm: "I32x4ExtmulHighI16x8S", argLength: 2, reg: vp128_21, typ: "Int128"},
+		{name: "I32x4ExtmulLowI16x8U", asm: "I32x4ExtmulLowI16x8U", argLength: 2, reg: vp128_21, typ: "Int128"},
+		{name: "I32x4ExtmulHighI16x8U", asm: "I32x4ExtmulHighI16x8U", argLength: 2, reg: vp128_21, typ: "Int128"},
+		{name: "I64x2Abs", asm: "I64x2Abs", argLength: 1, reg: vp128_11, typ: "Int128"},
+		{name: "I64x2Neg", asm: "I64x2Neg", argLength: 1, reg: vp128_11, typ: "Int128"},
+		{name: "I64x2AllTrue", asm: "I64x2AllTrue", argLength: 1, reg: vp128_11gp, typ: "Int128"},
+		{name: "I64x2Bitmask", asm: "I64x2Bitmask", argLength: 1, reg: vp128_11gp, typ: "Int128"},
+		{name: "I64x2ExtendLowI32x4S", asm: "I64x2ExtendLowI32x4S", argLength: 1, reg: vp128_11, typ: "Int128"},
+		{name: "I64x2ExtendHighI32x4S", asm: "I64x2ExtendHighI32x4S", argLength: 1, reg: vp128_11, typ: "Int128"},
+		{name: "I64x2ExtendLowI32x4U", asm: "I64x2ExtendLowI32x4U", argLength: 1, reg: vp128_11, typ: "Int128"},
+		{name: "I64x2ExtendHighI32x4U", asm: "I64x2ExtendHighI32x4U", argLength: 1, reg: vp128_11, typ: "Int128"},
+		// I64x2Shl
+		// I64x2ShrS
+		// I64x2ShrU
+		{name: "I64x2Add", asm: "I64x2Add", argLength: 2, reg: vp128_21, typ: "Int128"},
+		{name: "I64x2Sub", asm: "I64x2Sub", argLength: 2, reg: vp128_21, typ: "Int128"},
+		{name: "I64x2Mul", asm: "I64x2Mul", argLength: 2, reg: vp128_21, typ: "Int128"},
+		{name: "I64x2Eq", asm: "I64x2Eq", argLength: 2, reg: vp128_21, typ: "Int128"},
+		{name: "I64x2Ne", asm: "I64x2Ne", argLength: 2, reg: vp128_21, typ: "Int128"},
+		{name: "I64x2LtS", asm: "I64x2LtS", argLength: 2, reg: vp128_21, typ: "Int128"},
+		{name: "I64x2GtS", asm: "I64x2GtS", argLength: 2, reg: vp128_21, typ: "Int128"},
+		{name: "I64x2LeS", asm: "I64x2LeS", argLength: 2, reg: vp128_21, typ: "Int128"},
+		{name: "I64x2ExtmulLowI32x4S", asm: "I64x2ExtmulLowI32x4S", argLength: 2, reg: vp128_21, typ: "Int128"},
+		{name: "I64x2ExtmulHighI32x4S", asm: "I64x2ExtmulHighI32x4S", argLength: 2, reg: vp128_21, typ: "Int128"},
+		{name: "I64x2ExtmulLowI32x4U", asm: "I64x2ExtmulLowI32x4U", argLength: 2, reg: vp128_21, typ: "Int128"},
+		{name: "I64x2ExtmulHighI32x4U", asm: "I64x2ExtmulHighI32x4U", argLength: 2, reg: vp128_21, typ: "Int128"},
+		{name: "F32x4Abs", asm: "F32x4Abs", argLength: 1, reg: vp128_11, typ: "Int128"},
+		{name: "F32x4Neg", asm: "F32x4Neg", argLength: 1, reg: vp128_11, typ: "Int128"},
+		{name: "F32x4Sqrt", asm: "F32x4Sqrt", argLength: 1, reg: vp128_11, typ: "Int128"},
+		{name: "F32x4Add", asm: "F32x4Add", argLength: 2, reg: vp128_21, typ: "Int128"},
+		{name: "F32x4Sub", asm: "F32x4Sub", argLength: 2, reg: vp128_21, typ: "Int128"},
+		{name: "F32x4Mul", asm: "F32x4Mul", argLength: 2, reg: vp128_21, typ: "Int128"},
+		{name: "F32x4Div", asm: "F32x4Div", argLength: 2, reg: vp128_21, typ: "Int128"},
+		{name: "F32x4Min", asm: "F32x4Min", argLength: 2, reg: vp128_21, typ: "Int128"},
+		{name: "F32x4Max", asm: "F32x4Max", argLength: 2, reg: vp128_21, typ: "Int128"},
+		{name: "F32x4Pmin", asm: "F32x4Pmin", argLength: 2, reg: vp128_21, typ: "Int128"},
+		{name: "F32x4Pmax", asm: "F32x4Pmax", argLength: 2, reg: vp128_21, typ: "Int128"},
+		{name: "F64x2Abs", asm: "F64x2Abs", argLength: 1, reg: vp128_11, typ: "Int128"},
+		{name: "F64x2Neg", asm: "F64x2Neg", argLength: 1, reg: vp128_11, typ: "Int128"},
+		{name: "F64x2Sqrt", asm: "F64x2Sqrt", argLength: 1, reg: vp128_11, typ: "Int128"},
+		{name: "F64x2Add", asm: "F64x2Add", argLength: 2, reg: vp128_21, typ: "Int128"},
+		{name: "F64x2Sub", asm: "F64x2Sub", argLength: 2, reg: vp128_21, typ: "Int128"},
+		{name: "F64x2Mul", asm: "F64x2Mul", argLength: 2, reg: vp128_21, typ: "Int128"},
+		{name: "F64x2Div", asm: "F64x2Div", argLength: 2, reg: vp128_21, typ: "Int128"},
+		{name: "F64x2Min", asm: "F64x2Min", argLength: 2, reg: vp128_21, typ: "Int128"},
+		{name: "F64x2Max", asm: "F64x2Max", argLength: 2, reg: vp128_21, typ: "Int128"},
+		{name: "I32x4TruncSatF32x4S", asm: "I32x4TruncSatF32x4S", argLength: 1, reg: vp128_11, typ: "Int128"},
+		{name: "I32x4TruncSatF32x4U", asm: "I32x4TruncSatF32x4U", argLength: 1, reg: vp128_11, typ: "Int128"},
+		{name: "F32x4ConvertI32x4S", asm: "F32x4ConvertI32x4S", argLength: 1, reg: vp128_11, typ: "Int128"},
+		{name: "F32x4ConvertI32x4U", asm: "F32x4ConvertI32x4U", argLength: 1, reg: vp128_11, typ: "Int128"},
+		{name: "I32x4TruncSatF64x2SZero", asm: "I32x4TruncSatF64x2SZero", argLength: 1, reg: vp128_11, typ: "Int128"},
+		{name: "I32x4TruncSatF64x2UZero", asm: "I32x4TruncSatF64x2UZero", argLength: 1, reg: vp128_11, typ: "Int128"},
+		{name: "F64x2ConvertLowI32x4S", asm: "F64x2ConvertLowI32x4S", argLength: 1, reg: vp128_11, typ: "Int128"},
+		{name: "F64x2ConvertLowI32x4U", asm: "F64x2ConvertLowI32x4U", argLength: 1, reg: vp128_11, typ: "Int128"},
 	}
 
 	archs = append(archs, arch{
