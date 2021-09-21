@@ -1,0 +1,5 @@
+#!/bin/bash
+
+DIR=$(go env GOROOT)/misc/wasm
+
+exec node --experimental-wasm-simd "$DIR/wasm_exec.js" "$@"
