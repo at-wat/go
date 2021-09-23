@@ -296,12 +296,12 @@ func init() {
 		{name: "V128Const", reg: vp128_01, aux: "Int128", rematerializeable: true, typ: "Int128"}, // returns the constant integer aux
 		// Shuffle
 		{name: "I8x16Swizzle", asm: "I8x16Swizzle", argLength: 2, reg: vp128_21, typ: "Int128"},
-		{name: "I8x16Splat", aux: "Int64", reg: regInfo{inputs: []regMask{gp}, outputs: []regMask{vp128}}, typ: "Int128"},
-		{name: "I16x8Splat", aux: "Int64", reg: regInfo{inputs: []regMask{gp}, outputs: []regMask{vp128}}, typ: "Int128"},
-		{name: "I32x4Splat", aux: "Int64", reg: regInfo{inputs: []regMask{gp}, outputs: []regMask{vp128}}, typ: "Int128"},
-		{name: "I64x2Splat", aux: "Int64", reg: regInfo{inputs: []regMask{gp}, outputs: []regMask{vp128}}, typ: "Int128"},
-		{name: "F32x4Splat", aux: "Float32", reg: regInfo{inputs: []regMask{fp32}, outputs: []regMask{vp128}}, typ: "Int128"},
-		{name: "F64x2Splat", aux: "Float64", reg: regInfo{inputs: []regMask{fp64}, outputs: []regMask{vp128}}, typ: "Int128"},
+		{name: "I8x16Splat", reg: regInfo{inputs: []regMask{gp}, outputs: []regMask{vp128}}, aux: "Int64", typ: "Int128"},
+		{name: "I16x8Splat", reg: regInfo{inputs: []regMask{gp}, outputs: []regMask{vp128}}, aux: "Int64", typ: "Int128"},
+		{name: "I32x4Splat", reg: regInfo{inputs: []regMask{gp}, outputs: []regMask{vp128}}, aux: "Int64", typ: "Int128"},
+		{name: "I64x2Splat", reg: regInfo{inputs: []regMask{gp}, outputs: []regMask{vp128}}, aux: "Int64", typ: "Int128"},
+		{name: "F32x4Splat", reg: regInfo{inputs: []regMask{fp32}, outputs: []regMask{vp128}}, aux: "Float32", typ: "Int128"},
+		{name: "F64x2Splat", reg: regInfo{inputs: []regMask{fp64}, outputs: []regMask{vp128}}, aux: "Float64", typ: "Int128"},
 		// I8x16ExtractLaneS
 		// I8x16ExtractLaneU
 		// I8x16ReplaceLane
