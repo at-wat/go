@@ -34777,7 +34777,7 @@ var opcodeTable = [...]opInfo{
 	},
 	{
 		name:              "V128Const",
-		auxType:           auxWASMSIMDImms,
+		auxType:           auxInt128,
 		argLen:            0,
 		rematerializeable: true,
 		reg: regInfo{

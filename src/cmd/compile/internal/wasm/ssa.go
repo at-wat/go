@@ -278,7 +278,7 @@ func ssaGenValueOnStack(s *ssagen.State, v *ssa.Value, extend bool) {
 		f64Const(s, v.AuxFloat())
 
 	case ssa.OpWasmV128Const:
-		v128Const(s, v.Aux.(*wasm.SIMDImms))
+		v128Const(s, v.AuxFloat())
 
 	case ssa.OpWasmI64Load8U, ssa.OpWasmI64Load8S, ssa.OpWasmI64Load16U, ssa.OpWasmI64Load16S, ssa.OpWasmI64Load32U, ssa.OpWasmI64Load32S, ssa.OpWasmI64Load, ssa.OpWasmF32Load, ssa.OpWasmF64Load:
 		getValue32(s, v.Args[0])
@@ -536,9 +536,9 @@ func f64Const(s *ssagen.State, val float64) {
 	p.From = obj.Addr{Type: obj.TYPE_FCONST, Val: val}
 }
 
-func v128Const(s *ssagen.State, val *wasm.SIMDImms) {
+func v128Const(s *ssagen.State, val float64) {
 	p := s.Prog(wasm.AV128Const)
-	p.From = obj.Addr{Type: obj.TYPE_FCONST, Val: val}
+	p.From = obj.Addr{Type: obj.TYPE_CONST, Val: val}
 }
 
 func getReg(s *ssagen.State, reg int16) {

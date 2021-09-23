@@ -1435,7 +1435,7 @@ func opHasAuxInt(op opData) bool {
 func opHasAux(op opData) bool {
 	switch op.aux {
 	case "String", "Sym", "SymOff", "Call", "CallOff", "SymValAndOff", "Typ", "TypSize",
-		"S390XCCMask", "S390XRotateParams", "WASMSIMDImms":
+		"S390XCCMask", "S390XRotateParams":
 		return true
 	}
 	return false
@@ -1790,8 +1790,6 @@ func (op opData) auxType() string {
 		return "s390x.CCMask"
 	case "S390XRotateParams":
 		return "s390x.RotateParams"
-	case "WASMSIMDImms":
-		return "wasm.SIMDImms"
 	default:
 		return "invalid"
 	}
@@ -1844,8 +1842,6 @@ func (b blockData) auxType() string {
 		return "s390x.CCMask"
 	case "S390XRotateParams":
 		return "s390x.RotateParams"
-	case "WASMSIMDImms":
-		return "wasm.SIMDImms"
 	default:
 		return "invalid"
 	}
