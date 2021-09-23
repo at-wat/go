@@ -353,6 +353,7 @@ const (
 	auxFlagConstant           // auxInt is a flagConstant
 	auxNameOffsetInt8         // aux is a &struct{Name ir.Name, Offset int64}; auxInt is index in parameter registers array
 	auxString                 // aux is a string
+	auxBytes                  // aux is an array of bytes
 	auxSym                    // aux is a symbol (a *gc.Node for locals, an *obj.LSym for globals, or nil for none)
 	auxSymOff                 // aux is a symbol, auxInt is an offset
 	auxSymValAndOff           // aux is a symbol, auxInt is a ValAndOff
@@ -368,6 +369,7 @@ const (
 	auxS390XCCMask       // aux is a s390x 4-bit condition code mask
 	auxS390XCCMaskInt8   // aux is a s390x 4-bit condition code mask, auxInt is a int8 immediate
 	auxS390XCCMaskUint8  // aux is a s390x 4-bit condition code mask, auxInt is a uint8 immediate
+	auxWASMSIMDImms      // aux is a WASM SIMD immediate value
 )
 
 // A SymEffect describes the effect that an SSA Value has on the variable

@@ -220,6 +220,8 @@ func (v *Value) auxString() string {
 		return fmt.Sprintf(" {%s}", Op(v.AuxInt))
 	case auxS390XCCMask, auxS390XRotateParams:
 		return fmt.Sprintf(" {%v}", v.Aux)
+	case auxWASMSIMDImms:
+		return fmt.Sprintf(" [%x]", v.Aux)
 	case auxFlagConstant:
 		return fmt.Sprintf("[%s]", flagConstant(v.AuxInt))
 	}

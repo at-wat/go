@@ -293,7 +293,7 @@ func init() {
 
 		{name: "V128Store", asm: "V128Store", argLength: 2, reg: vp128store, aux: "Int64", typ: "Mem"},
 
-		{name: "V128Const", reg: vp128_01, aux: "Int128", rematerializeable: true, typ: "Int128"}, // returns the constant integer aux
+		{name: "V128Const", reg: vp128_01, aux: "WASMSIMDImms", rematerializeable: true, typ: "Int128"}, // returns the constant integer aux
 		// Shuffle
 		{name: "I8x16Swizzle", asm: "I8x16Swizzle", argLength: 2, reg: vp128_21, typ: "Int128"},
 		{name: "I8x16Splat", reg: regInfo{inputs: []regMask{gp}, outputs: []regMask{vp128}}, aux: "Int64", typ: "Int128"},

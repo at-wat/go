@@ -6,6 +6,7 @@ package ssa
 
 import (
 	"cmd/internal/obj/s390x"
+	"cmd/internal/obj/wasm"
 	"math"
 	"math/bits"
 )
@@ -203,6 +204,11 @@ func checkFunc(f *Func) {
 			case auxS390XRotateParams:
 				if _, ok := v.Aux.(s390x.RotateParams); !ok {
 					f.Fatalf("bad type %T for S390XRotateParams in %v", v.Aux, v)
+				}
+				canHaveAux = true
+			case auxWASMSIMDImms:
+				if _, ok := v.Aux.(wasm.SIMDImms); !ok {
+					f.Fatalf("bad type %T for WASMSIMDImms in %v", v.Aux, v)
 				}
 				canHaveAux = true
 			case auxFlagConstant:

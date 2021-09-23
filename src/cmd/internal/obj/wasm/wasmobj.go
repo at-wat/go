@@ -996,7 +996,7 @@ func assemble(ctxt *obj.Link, s *obj.LSym, newprog obj.ProgAlloc) {
 				updateLocalSP(w)
 			}
 
-		case AI32Const, AI64Const, AV128Const:
+		case AI32Const, AI64Const:
 			if p.From.Name == obj.NAME_EXTERN {
 				r := obj.Addrel(s)
 				r.Siz = 1 // actually variable sized
@@ -1017,6 +1017,13 @@ func assemble(ctxt *obj.Link, s *obj.LSym, newprog obj.ProgAlloc) {
 			b := make([]byte, 8)
 			binary.LittleEndian.PutUint64(b, math.Float64bits(p.From.Val.(float64)))
 			w.Write(b)
+
+		case AV128Const:
+			imms := p.From.Val.(SIMDImms)
+			if n := len(imms); n != 16 {
+				panic(fmt.Sprintf("unexpected length of V128Const: %d", n))
+			}
+			w.Write([]byte(imms))
 
 		case AI32Load, AI64Load, AF32Load, AF64Load, AI32Load8S, AI32Load8U, AI32Load16S, AI32Load16U, AI64Load8S, AI64Load8U, AI64Load16S, AI64Load16U, AI64Load32S, AI64Load32U, AV128Load, AV128Load8Splat, AV128Load16Splat, AV128Load32Splat, AV128Load64Splat, AV128Load32Zero, AV128Load64Zero:
 			if p.From.Offset < 0 {
