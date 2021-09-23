@@ -195,7 +195,6 @@ var Anames = []string{
 	"I64TruncSatF32U",
 	"I64TruncSatF64S",
 	"I64TruncSatF64U",
-
 	"V128Load",
 	"V128Load8x8S",
 	"V128Load8x8U",
@@ -452,7 +451,6 @@ var Anames = []string{
 	"I32x4TruncSatF64x2UZero",
 	"F64x2ConvertLowI32x4S",
 	"F64x2ConvertLowI32x4U",
-
 	"Last",
 	"RESUMEPOINT",
 	"CALLNORESUME",

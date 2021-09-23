@@ -77,6 +77,13 @@ func main() {
 		if strings.HasPrefix(line, "}") || strings.ContainsRune(line, '=') {
 			break
 		}
+		if line == "\t_" {
+			if first {
+				panic("first element must not be '_'")
+			}
+			fmt.Fprintf(out, "\t\"_\",\n")
+			continue
+		}
 		sub := Are.FindStringSubmatch(line)
 		if len(sub) < 2 {
 			continue
