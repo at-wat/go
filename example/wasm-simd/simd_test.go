@@ -39,7 +39,7 @@ func BenchmarkFloat32VecMul(b *testing.B) {
 				allowJSContextSwitch()
 
 				if !reflect.DeepEqual(expected, out) {
-					b.Fatal("Unexpected result")
+					b.Fatalf("Unexpected result\n%v\n%v", expected[0], out[0])
 				}
 				allowJSContextSwitch()
 			}
