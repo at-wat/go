@@ -279,29 +279,29 @@ func init() {
 		{name: "I64Rotl", asm: "I64Rotl", argLength: 2, reg: gp21, typ: "Int64"},     // rotl(arg0, arg1)
 		{name: "I64Popcnt", asm: "I64Popcnt", argLength: 1, reg: gp11, typ: "Int64"}, // popcnt(arg0)
 
-		{name: "V128Load", asm: "V128Load", argLength: 2, reg: vp128load, aux: "Int64", typ: "Int128"},
-		{name: "V128Load8x8S", asm: "V128Load8x8S", argLength: 2, reg: vp128load, aux: "Int64", typ: "Int128"},
-		{name: "V128Load8x8U", asm: "V128Load8x8U", argLength: 2, reg: vp128load, aux: "Int64", typ: "Int128"},
-		{name: "V128Load16x4S", asm: "V128Load16x4S", argLength: 2, reg: vp128load, aux: "Int64", typ: "Int128"},
-		{name: "V128Load16x4U", asm: "V128Load16x4U", argLength: 2, reg: vp128load, aux: "Int64", typ: "Int128"},
-		{name: "V128Load32x2S", asm: "V128Load32x2S", argLength: 2, reg: vp128load, aux: "Int64", typ: "Int128"},
-		{name: "V128Load32x2U", asm: "V128Load32x2U", argLength: 2, reg: vp128load, aux: "Int64", typ: "Int128"},
-		{name: "V128Load8Splat", asm: "V128Load8Splat", argLength: 2, reg: vp128load, aux: "Int64", typ: "Int128"},
-		{name: "V128Load16Splat", asm: "V128Load16Splat", argLength: 2, reg: vp128load, aux: "Int64", typ: "Int128"},
-		{name: "V128Load32Splat", asm: "V128Load32Splat", argLength: 2, reg: vp128load, aux: "Int64", typ: "Int128"},
-		{name: "V128Load64Splat", asm: "V128Load64Splat", argLength: 2, reg: vp128load, aux: "Int64", typ: "Int128"},
+		{name: "V128Load", asm: "V128Load", argLength: 2, reg: vp128load, typ: "Int128"},
+		{name: "V128Load8x8S", asm: "V128Load8x8S", argLength: 2, reg: vp128load, typ: "Int128"},
+		{name: "V128Load8x8U", asm: "V128Load8x8U", argLength: 2, reg: vp128load, typ: "Int128"},
+		{name: "V128Load16x4S", asm: "V128Load16x4S", argLength: 2, reg: vp128load, typ: "Int128"},
+		{name: "V128Load16x4U", asm: "V128Load16x4U", argLength: 2, reg: vp128load, typ: "Int128"},
+		{name: "V128Load32x2S", asm: "V128Load32x2S", argLength: 2, reg: vp128load, typ: "Int128"},
+		{name: "V128Load32x2U", asm: "V128Load32x2U", argLength: 2, reg: vp128load, typ: "Int128"},
+		{name: "V128Load8Splat", asm: "V128Load8Splat", argLength: 2, reg: vp128load, typ: "Int128"},
+		{name: "V128Load16Splat", asm: "V128Load16Splat", argLength: 2, reg: vp128load, typ: "Int128"},
+		{name: "V128Load32Splat", asm: "V128Load32Splat", argLength: 2, reg: vp128load, typ: "Int128"},
+		{name: "V128Load64Splat", asm: "V128Load64Splat", argLength: 2, reg: vp128load, typ: "Int128"},
 
-		{name: "V128Store", asm: "V128Store", argLength: 2, reg: vp128store, aux: "Int64", typ: "Mem"},
+		{name: "V128Store", asm: "V128Store", argLength: 2, reg: vp128store, typ: "Mem"},
 
-		{name: "V128Const", reg: vp128_01, aux: "Int128", rematerializeable: true, typ: "Int128"}, // returns the constant integer aux
+		{name: "V128Const", reg: vp128_01, rematerializeable: true, typ: "Int128"}, // returns the constant integer aux
 		// Shuffle
 		{name: "I8x16Swizzle", asm: "I8x16Swizzle", argLength: 2, reg: vp128_21, typ: "Int128"},
-		{name: "I8x16Splat", reg: regInfo{inputs: []regMask{gp}, outputs: []regMask{vp128}}, aux: "Int64", typ: "Int128"},
-		{name: "I16x8Splat", reg: regInfo{inputs: []regMask{gp}, outputs: []regMask{vp128}}, aux: "Int64", typ: "Int128"},
-		{name: "I32x4Splat", reg: regInfo{inputs: []regMask{gp}, outputs: []regMask{vp128}}, aux: "Int64", typ: "Int128"},
-		{name: "I64x2Splat", reg: regInfo{inputs: []regMask{gp}, outputs: []regMask{vp128}}, aux: "Int64", typ: "Int128"},
-		{name: "F32x4Splat", reg: regInfo{inputs: []regMask{fp32}, outputs: []regMask{vp128}}, aux: "Float32", typ: "Int128"},
-		{name: "F64x2Splat", reg: regInfo{inputs: []regMask{fp64}, outputs: []regMask{vp128}}, aux: "Float64", typ: "Int128"},
+		{name: "I8x16Splat", reg: regInfo{inputs: []regMask{gp}, outputs: []regMask{vp128}}, typ: "Int128"},
+		{name: "I16x8Splat", reg: regInfo{inputs: []regMask{gp}, outputs: []regMask{vp128}}, typ: "Int128"},
+		{name: "I32x4Splat", reg: regInfo{inputs: []regMask{gp}, outputs: []regMask{vp128}}, typ: "Int128"},
+		{name: "I64x2Splat", reg: regInfo{inputs: []regMask{gp}, outputs: []regMask{vp128}}, typ: "Int128"},
+		{name: "F32x4Splat", reg: regInfo{inputs: []regMask{fp32}, outputs: []regMask{vp128}}, typ: "Int128"},
+		{name: "F64x2Splat", reg: regInfo{inputs: []regMask{fp64}, outputs: []regMask{vp128}}, typ: "Int128"},
 		// I8x16ExtractLaneS
 		// I8x16ExtractLaneU
 		// I8x16ReplaceLane

@@ -34610,10 +34610,9 @@ var opcodeTable = [...]opInfo{
 		},
 	},
 	{
-		name:    "V128Load",
-		auxType: auxInt64,
-		argLen:  2,
-		asm:     wasm.AV128Load,
+		name:   "V128Load",
+		argLen: 2,
+		asm:    wasm.AV128Load,
 		reg: regInfo{
 			inputs: []inputInfo{
 				{0, 360287970189705215}, // R0 R1 R2 R3 R4 R5 R6 R7 R8 R9 R10 R11 R12 R13 R14 R15 SP SB
@@ -34624,10 +34623,9 @@ var opcodeTable = [...]opInfo{
 		},
 	},
 	{
-		name:    "V128Load8x8S",
-		auxType: auxInt64,
-		argLen:  2,
-		asm:     wasm.AV128Load8x8S,
+		name:   "V128Load8x8S",
+		argLen: 2,
+		asm:    wasm.AV128Load8x8S,
 		reg: regInfo{
 			inputs: []inputInfo{
 				{0, 360287970189705215}, // R0 R1 R2 R3 R4 R5 R6 R7 R8 R9 R10 R11 R12 R13 R14 R15 SP SB
@@ -34638,10 +34636,9 @@ var opcodeTable = [...]opInfo{
 		},
 	},
 	{
-		name:    "V128Load8x8U",
-		auxType: auxInt64,
-		argLen:  2,
-		asm:     wasm.AV128Load8x8U,
+		name:   "V128Load8x8U",
+		argLen: 2,
+		asm:    wasm.AV128Load8x8U,
 		reg: regInfo{
 			inputs: []inputInfo{
 				{0, 360287970189705215}, // R0 R1 R2 R3 R4 R5 R6 R7 R8 R9 R10 R11 R12 R13 R14 R15 SP SB
@@ -34652,10 +34649,9 @@ var opcodeTable = [...]opInfo{
 		},
 	},
 	{
-		name:    "V128Load16x4S",
-		auxType: auxInt64,
-		argLen:  2,
-		asm:     wasm.AV128Load16x4S,
+		name:   "V128Load16x4S",
+		argLen: 2,
+		asm:    wasm.AV128Load16x4S,
 		reg: regInfo{
 			inputs: []inputInfo{
 				{0, 360287970189705215}, // R0 R1 R2 R3 R4 R5 R6 R7 R8 R9 R10 R11 R12 R13 R14 R15 SP SB
@@ -34666,10 +34662,9 @@ var opcodeTable = [...]opInfo{
 		},
 	},
 	{
-		name:    "V128Load16x4U",
-		auxType: auxInt64,
-		argLen:  2,
-		asm:     wasm.AV128Load16x4U,
+		name:   "V128Load16x4U",
+		argLen: 2,
+		asm:    wasm.AV128Load16x4U,
 		reg: regInfo{
 			inputs: []inputInfo{
 				{0, 360287970189705215}, // R0 R1 R2 R3 R4 R5 R6 R7 R8 R9 R10 R11 R12 R13 R14 R15 SP SB
@@ -34680,10 +34675,9 @@ var opcodeTable = [...]opInfo{
 		},
 	},
 	{
-		name:    "V128Load32x2S",
-		auxType: auxInt64,
-		argLen:  2,
-		asm:     wasm.AV128Load32x2S,
+		name:   "V128Load32x2S",
+		argLen: 2,
+		asm:    wasm.AV128Load32x2S,
 		reg: regInfo{
 			inputs: []inputInfo{
 				{0, 360287970189705215}, // R0 R1 R2 R3 R4 R5 R6 R7 R8 R9 R10 R11 R12 R13 R14 R15 SP SB
@@ -34694,10 +34688,9 @@ var opcodeTable = [...]opInfo{
 		},
 	},
 	{
-		name:    "V128Load32x2U",
-		auxType: auxInt64,
-		argLen:  2,
-		asm:     wasm.AV128Load32x2U,
+		name:   "V128Load32x2U",
+		argLen: 2,
+		asm:    wasm.AV128Load32x2U,
 		reg: regInfo{
 			inputs: []inputInfo{
 				{0, 360287970189705215}, // R0 R1 R2 R3 R4 R5 R6 R7 R8 R9 R10 R11 R12 R13 R14 R15 SP SB
@@ -34708,10 +34701,9 @@ var opcodeTable = [...]opInfo{
 		},
 	},
 	{
-		name:    "V128Load8Splat",
-		auxType: auxInt64,
-		argLen:  2,
-		asm:     wasm.AV128Load8Splat,
+		name:   "V128Load8Splat",
+		argLen: 2,
+		asm:    wasm.AV128Load8Splat,
 		reg: regInfo{
 			inputs: []inputInfo{
 				{0, 360287970189705215}, // R0 R1 R2 R3 R4 R5 R6 R7 R8 R9 R10 R11 R12 R13 R14 R15 SP SB
@@ -34722,10 +34714,9 @@ var opcodeTable = [...]opInfo{
 		},
 	},
 	{
-		name:    "V128Load16Splat",
-		auxType: auxInt64,
-		argLen:  2,
-		asm:     wasm.AV128Load16Splat,
+		name:   "V128Load16Splat",
+		argLen: 2,
+		asm:    wasm.AV128Load16Splat,
 		reg: regInfo{
 			inputs: []inputInfo{
 				{0, 360287970189705215}, // R0 R1 R2 R3 R4 R5 R6 R7 R8 R9 R10 R11 R12 R13 R14 R15 SP SB
@@ -34736,10 +34727,9 @@ var opcodeTable = [...]opInfo{
 		},
 	},
 	{
-		name:    "V128Load32Splat",
-		auxType: auxInt64,
-		argLen:  2,
-		asm:     wasm.AV128Load32Splat,
+		name:   "V128Load32Splat",
+		argLen: 2,
+		asm:    wasm.AV128Load32Splat,
 		reg: regInfo{
 			inputs: []inputInfo{
 				{0, 360287970189705215}, // R0 R1 R2 R3 R4 R5 R6 R7 R8 R9 R10 R11 R12 R13 R14 R15 SP SB
@@ -34750,10 +34740,9 @@ var opcodeTable = [...]opInfo{
 		},
 	},
 	{
-		name:    "V128Load64Splat",
-		auxType: auxInt64,
-		argLen:  2,
-		asm:     wasm.AV128Load64Splat,
+		name:   "V128Load64Splat",
+		argLen: 2,
+		asm:    wasm.AV128Load64Splat,
 		reg: regInfo{
 			inputs: []inputInfo{
 				{0, 360287970189705215}, // R0 R1 R2 R3 R4 R5 R6 R7 R8 R9 R10 R11 R12 R13 R14 R15 SP SB
@@ -34764,10 +34753,9 @@ var opcodeTable = [...]opInfo{
 		},
 	},
 	{
-		name:    "V128Store",
-		auxType: auxInt64,
-		argLen:  2,
-		asm:     wasm.AV128Store,
+		name:   "V128Store",
+		argLen: 2,
+		asm:    wasm.AV128Store,
 		reg: regInfo{
 			inputs: []inputInfo{
 				{1, 71776119061217280},  // V0 V1 V2 V3 V4 V5 V6 V7
@@ -34777,7 +34765,6 @@ var opcodeTable = [...]opInfo{
 	},
 	{
 		name:              "V128Const",
-		auxType:           auxInt128,
 		argLen:            0,
 		rematerializeable: true,
 		reg: regInfo{
@@ -34801,9 +34788,8 @@ var opcodeTable = [...]opInfo{
 		},
 	},
 	{
-		name:    "I8x16Splat",
-		auxType: auxInt64,
-		argLen:  0,
+		name:   "I8x16Splat",
+		argLen: 0,
 		reg: regInfo{
 			inputs: []inputInfo{
 				{0, 65535}, // R0 R1 R2 R3 R4 R5 R6 R7 R8 R9 R10 R11 R12 R13 R14 R15
@@ -34814,9 +34800,8 @@ var opcodeTable = [...]opInfo{
 		},
 	},
 	{
-		name:    "I16x8Splat",
-		auxType: auxInt64,
-		argLen:  0,
+		name:   "I16x8Splat",
+		argLen: 0,
 		reg: regInfo{
 			inputs: []inputInfo{
 				{0, 65535}, // R0 R1 R2 R3 R4 R5 R6 R7 R8 R9 R10 R11 R12 R13 R14 R15
@@ -34827,9 +34812,8 @@ var opcodeTable = [...]opInfo{
 		},
 	},
 	{
-		name:    "I32x4Splat",
-		auxType: auxInt64,
-		argLen:  0,
+		name:   "I32x4Splat",
+		argLen: 0,
 		reg: regInfo{
 			inputs: []inputInfo{
 				{0, 65535}, // R0 R1 R2 R3 R4 R5 R6 R7 R8 R9 R10 R11 R12 R13 R14 R15
@@ -34840,9 +34824,8 @@ var opcodeTable = [...]opInfo{
 		},
 	},
 	{
-		name:    "I64x2Splat",
-		auxType: auxInt64,
-		argLen:  0,
+		name:   "I64x2Splat",
+		argLen: 0,
 		reg: regInfo{
 			inputs: []inputInfo{
 				{0, 65535}, // R0 R1 R2 R3 R4 R5 R6 R7 R8 R9 R10 R11 R12 R13 R14 R15
@@ -34853,9 +34836,8 @@ var opcodeTable = [...]opInfo{
 		},
 	},
 	{
-		name:    "F32x4Splat",
-		auxType: auxFloat32,
-		argLen:  0,
+		name:   "F32x4Splat",
+		argLen: 0,
 		reg: regInfo{
 			inputs: []inputInfo{
 				{0, 4294901760}, // F0 F1 F2 F3 F4 F5 F6 F7 F8 F9 F10 F11 F12 F13 F14 F15
@@ -34866,9 +34848,8 @@ var opcodeTable = [...]opInfo{
 		},
 	},
 	{
-		name:    "F64x2Splat",
-		auxType: auxFloat64,
-		argLen:  0,
+		name:   "F64x2Splat",
+		argLen: 0,
 		reg: regInfo{
 			inputs: []inputInfo{
 				{0, 281470681743360}, // F16 F17 F18 F19 F20 F21 F22 F23 F24 F25 F26 F27 F28 F29 F30 F31
