@@ -13,6 +13,8 @@ import (
 	"fmt"
 	"io"
 	"math"
+	"strconv"
+	"strings"
 )
 
 var Register = map[string]int16{
@@ -996,7 +998,7 @@ func assemble(ctxt *obj.Link, s *obj.LSym, newprog obj.ProgAlloc) {
 				updateLocalSP(w)
 			}
 
-		case AI32Const, AI64Const, AV128Const:
+		case AI32Const, AI64Const:
 			if p.From.Name == obj.NAME_EXTERN {
 				r := obj.Addrel(s)
 				r.Siz = 1 // actually variable sized
@@ -1017,6 +1019,71 @@ func assemble(ctxt *obj.Link, s *obj.LSym, newprog obj.ProgAlloc) {
 			b := make([]byte, 8)
 			binary.LittleEndian.PutUint64(b, math.Float64bits(p.From.Val.(float64)))
 			w.Write(b)
+
+		case AV128Const:
+			// Temporary parse at here
+			// Text format: https://github.com/WebAssembly/simd/blob/main/proposals/simd/TextSIMD.md
+			imms := strings.Fields(p.From.Val.(string))
+			writeUint := func(n, size int) {
+				if len(imms) != n+1 {
+					panic("wrong number of immediate values")
+				}
+				for i := 0; i < n; i++ {
+					v, err := strconv.ParseUint(imms[i+1], 0, size)
+					if err != nil {
+						panic(err.Error())
+					}
+					switch size {
+					case 8:
+						err = binary.Write(w, binary.LittleEndian, uint8(v))
+					case 16:
+						err = binary.Write(w, binary.LittleEndian, uint16(v))
+					case 32:
+						err = binary.Write(w, binary.LittleEndian, uint32(v))
+					case 64:
+						err = binary.Write(w, binary.LittleEndian, v)
+					}
+					if err != nil {
+						panic(err.Error())
+					}
+				}
+			}
+			writeFloat := func(n, size int) {
+				if len(imms) != n+1 {
+					panic("wrong number of immediate values")
+				}
+				for i := 0; i < n; i++ {
+					v, err := strconv.ParseFloat(imms[i+1], size)
+					if err != nil {
+						panic(err.Error())
+					}
+					switch size {
+					case 32:
+						err = binary.Write(w, binary.LittleEndian, float32(v))
+					case 64:
+						err = binary.Write(w, binary.LittleEndian, v)
+					}
+					if err != nil {
+						panic(err.Error())
+					}
+				}
+			}
+			switch imms[0] {
+			case "i8x16":
+				writeUint(16, 8)
+			case "i16x8":
+				writeUint(8, 16)
+			case "i32x4":
+				writeUint(4, 32)
+			case "i64x2":
+				writeUint(2, 64)
+			case "f32x4":
+				writeFloat(4, 32)
+			case "f64x2":
+				writeFloat(2, 64)
+			default:
+				panic("invalid v128 const type")
+			}
 
 		case AI32Load, AI64Load, AF32Load, AF64Load, AI32Load8S, AI32Load8U, AI32Load16S, AI32Load16U, AI64Load8S, AI64Load8U, AI64Load16S, AI64Load16U, AI64Load32S, AI64Load32U, AV128Load, AV128Load8Splat, AV128Load16Splat, AV128Load32Splat, AV128Load64Splat, AV128Load32Zero, AV128Load64Zero:
 			if p.From.Offset < 0 {
