@@ -277,9 +277,6 @@ func ssaGenValueOnStack(s *ssagen.State, v *ssa.Value, extend bool) {
 	case ssa.OpWasmF64Const:
 		f64Const(s, v.AuxFloat())
 
-	case ssa.OpWasmV128Const:
-		v128Const(s, v.AuxFloat())
-
 	case ssa.OpWasmI64Load8U, ssa.OpWasmI64Load8S, ssa.OpWasmI64Load16U, ssa.OpWasmI64Load16S, ssa.OpWasmI64Load32U, ssa.OpWasmI64Load32S, ssa.OpWasmI64Load, ssa.OpWasmF32Load, ssa.OpWasmF64Load:
 		getValue32(s, v.Args[0])
 		p := s.Prog(v.Op.Asm())
@@ -374,80 +371,6 @@ func ssaGenValueOnStack(s *ssagen.State, v *ssa.Value, extend bool) {
 	case ssa.OpCopy:
 		getValue64(s, v.Args[0])
 
-	case ssa.OpWasmV128Load,
-		ssa.OpWasmV128Load8x8S, ssa.OpWasmV128Load8x8U, ssa.OpWasmV128Load16x4S, ssa.OpWasmV128Load16x4U, ssa.OpWasmV128Load32x2S, ssa.OpWasmV128Load32x2U,
-		ssa.OpWasmV128Load8Splat, ssa.OpWasmV128Load16Splat, ssa.OpWasmV128Load32Splat, ssa.OpWasmV128Load64Splat:
-		getValue32(s, v.Args[0])
-		p := s.Prog(v.Op.Asm())
-		p.From = obj.Addr{Type: obj.TYPE_CONST, Offset: v.AuxInt}
-
-	case ssa.OpWasmV128Store:
-		getValue32(s, v.Args[0])
-		getValue64(s, v.Args[1])
-		p := s.Prog(v.Op.Asm())
-		p.To = obj.Addr{Type: obj.TYPE_CONST, Offset: v.AuxInt}
-
-	case ssa.OpWasmI8x16Swizzle,
-		ssa.OpWasmI8x16Eq, ssa.OpWasmI8x16Ne, ssa.OpWasmI8x16LtS, ssa.OpWasmI8x16LtU, ssa.OpWasmI8x16GtS, ssa.OpWasmI8x16GtU, ssa.OpWasmI8x16LeS, ssa.OpWasmI8x16LeU, ssa.OpWasmI8x16GeS, ssa.OpWasmI8x16GeU,
-		ssa.OpWasmI16x8Eq, ssa.OpWasmI16x8Ne, ssa.OpWasmI16x8LtS, ssa.OpWasmI16x8LtU, ssa.OpWasmI16x8GtS, ssa.OpWasmI16x8GtU, ssa.OpWasmI16x8LeS, ssa.OpWasmI16x8LeU, ssa.OpWasmI16x8GeS, ssa.OpWasmI16x8GeU,
-		ssa.OpWasmI32x4Eq, ssa.OpWasmI32x4Ne, ssa.OpWasmI32x4LtS, ssa.OpWasmI32x4LtU, ssa.OpWasmI32x4GtS, ssa.OpWasmI32x4GtU, ssa.OpWasmI32x4LeS, ssa.OpWasmI32x4LeU, ssa.OpWasmI32x4GeS, ssa.OpWasmI32x4GeU,
-		ssa.OpWasmF32x4Eq, ssa.OpWasmF32x4Ne, ssa.OpWasmF32x4Lt, ssa.OpWasmF32x4Gt, ssa.OpWasmF32x4Le, ssa.OpWasmF32x4Ge,
-		ssa.OpWasmF64x2Eq, ssa.OpWasmF64x2Ne, ssa.OpWasmF64x2Lt, ssa.OpWasmF64x2Gt, ssa.OpWasmF64x2Le, ssa.OpWasmF64x2Ge,
-		ssa.OpWasmV128And, ssa.OpWasmV128Andnot, ssa.OpWasmV128Or, ssa.OpWasmV128Xor,
-		ssa.OpWasmI8x16NarrowI16x8S, ssa.OpWasmI8x16NarrowI16x8U,
-		ssa.OpWasmI8x16Add, ssa.OpWasmI8x16AddSatS, ssa.OpWasmI8x16AddSatU, ssa.OpWasmI8x16Sub, ssa.OpWasmI8x16SubSatS, ssa.OpWasmI8x16SubSatU,
-		ssa.OpWasmI8x16MinS, ssa.OpWasmI8x16MinU, ssa.OpWasmI8x16MaxS, ssa.OpWasmI8x16MaxU, ssa.OpWasmI8x16AvgrU,
-		ssa.OpWasmI16x8Q15mulrSatS, ssa.OpWasmI16x8NarrowI32x4S, ssa.OpWasmI16x8NarrowI32x4U,
-		ssa.OpWasmI16x8Add, ssa.OpWasmI16x8AddSatS, ssa.OpWasmI16x8AddSatU,
-		ssa.OpWasmI16x8Sub, ssa.OpWasmI16x8SubSatS, ssa.OpWasmI16x8SubSatU,
-		ssa.OpWasmI16x8Mul, ssa.OpWasmI16x8MinS, ssa.OpWasmI16x8MinU, ssa.OpWasmI16x8MaxS, ssa.OpWasmI16x8MaxU,
-		ssa.OpWasmI16x8AvgrU, ssa.OpWasmI16x8ExtmulLowI8x16S, ssa.OpWasmI16x8ExtmulHighI8x16S, ssa.OpWasmI16x8ExtmulLowI8x16U, ssa.OpWasmI16x8ExtmulHighI8x16U,
-		ssa.OpWasmI32x4Add, ssa.OpWasmI32x4Sub, ssa.OpWasmI32x4Mul,
-		ssa.OpWasmI32x4MinS, ssa.OpWasmI32x4MinU, ssa.OpWasmI32x4MaxS, ssa.OpWasmI32x4MaxU, ssa.OpWasmI32x4DotI16x8S,
-		ssa.OpWasmI32x4ExtmulLowI16x8S, ssa.OpWasmI32x4ExtmulHighI16x8S, ssa.OpWasmI32x4ExtmulLowI16x8U, ssa.OpWasmI32x4ExtmulHighI16x8U,
-		ssa.OpWasmI64x2Add, ssa.OpWasmI64x2Sub, ssa.OpWasmI64x2Mul, ssa.OpWasmI64x2Eq, ssa.OpWasmI64x2Ne, ssa.OpWasmI64x2LtS, ssa.OpWasmI64x2GtS, ssa.OpWasmI64x2LeS,
-		ssa.OpWasmI64x2ExtmulLowI32x4S, ssa.OpWasmI64x2ExtmulHighI32x4S, ssa.OpWasmI64x2ExtmulLowI32x4U, ssa.OpWasmI64x2ExtmulHighI32x4U,
-		ssa.OpWasmF32x4Add, ssa.OpWasmF32x4Sub, ssa.OpWasmF32x4Mul, ssa.OpWasmF32x4Div, ssa.OpWasmF32x4Min, ssa.OpWasmF32x4Max, ssa.OpWasmF32x4Pmin, ssa.OpWasmF32x4Pmax,
-		ssa.OpWasmF64x2Add, ssa.OpWasmF64x2Sub, ssa.OpWasmF64x2Mul, ssa.OpWasmF64x2Div, ssa.OpWasmF64x2Min, ssa.OpWasmF64x2Max:
-		getValue128(s, v.Args[0])
-		getValue128(s, v.Args[1])
-		s.Prog(v.Op.Asm())
-
-	case ssa.OpWasmV128Not, ssa.OpWasmV128AnyTrue, ssa.OpWasmF32x4DemoteF64x2Zero, ssa.OpWasmF64x2PromoteLowF32x4,
-		ssa.OpWasmI8x16Abs, ssa.OpWasmI8x16Neg, ssa.OpWasmI8x16Popcnt, ssa.OpWasmI8x16AllTrue, ssa.OpWasmI8x16Bitmask,
-		ssa.OpWasmF32x4Ceil, ssa.OpWasmF32x4Floor, ssa.OpWasmF32x4Trunc, ssa.OpWasmF32x4Nearest,
-		ssa.OpWasmF64x2Ceil, ssa.OpWasmF64x2Floor, ssa.OpWasmF64x2Trunc,
-		ssa.OpWasmI16x8ExtaddPairwiseI8x16S, ssa.OpWasmI16x8ExtaddPairwiseI8x16U,
-		ssa.OpWasmI32x4ExtaddPairwiseI16x8S, ssa.OpWasmI32x4ExtaddPairwiseI16x8U,
-		ssa.OpWasmI16x8Abs, ssa.OpWasmI16x8Neg, ssa.OpWasmI16x8AllTrue, ssa.OpWasmI16x8Bitmask,
-		ssa.OpWasmI16x8ExtendLowI8x16S, ssa.OpWasmI16x8ExtendHighI8x16S, ssa.OpWasmI16x8ExtendLowI8x16U, ssa.OpWasmI16x8ExtendHighI8x16U,
-		ssa.OpWasmF64x2Nearest,
-		ssa.OpWasmI32x4Abs, ssa.OpWasmI32x4Neg, ssa.OpWasmI32x4AllTrue, ssa.OpWasmI32x4Bitmask,
-		ssa.OpWasmI32x4ExtendLowI16x8S, ssa.OpWasmI32x4ExtendHighI16x8S, ssa.OpWasmI32x4ExtendLowI16x8U, ssa.OpWasmI32x4ExtendHighI16x8U,
-		ssa.OpWasmI64x2Abs, ssa.OpWasmI64x2Neg, ssa.OpWasmI64x2AllTrue, ssa.OpWasmI64x2Bitmask,
-		ssa.OpWasmI64x2ExtendLowI32x4S, ssa.OpWasmI64x2ExtendHighI32x4S, ssa.OpWasmI64x2ExtendLowI32x4U, ssa.OpWasmI64x2ExtendHighI32x4U,
-		ssa.OpWasmF32x4Abs, ssa.OpWasmF32x4Neg, ssa.OpWasmF32x4Sqrt,
-		ssa.OpWasmF64x2Abs, ssa.OpWasmF64x2Neg, ssa.OpWasmF64x2Sqrt,
-		ssa.OpWasmI32x4TruncSatF32x4S, ssa.OpWasmI32x4TruncSatF32x4U, ssa.OpWasmF32x4ConvertI32x4S, ssa.OpWasmF32x4ConvertI32x4U,
-		ssa.OpWasmI32x4TruncSatF64x2SZero, ssa.OpWasmI32x4TruncSatF64x2UZero,
-		ssa.OpWasmF64x2ConvertLowI32x4S, ssa.OpWasmF64x2ConvertLowI32x4U:
-		getValue128(s, v.Args[0])
-		s.Prog(v.Op.Asm())
-
-	case ssa.OpWasmV128Bitselect:
-		getValue128(s, v.Args[0])
-		getValue128(s, v.Args[1])
-		getValue128(s, v.Args[2])
-		s.Prog(v.Op.Asm())
-
-	case ssa.OpWasmI8x16Splat, ssa.OpWasmI16x8Splat, ssa.OpWasmI32x4Splat, ssa.OpWasmI64x2Splat, ssa.OpWasmF64x2Splat:
-		getValue64(s, v.Args[0])
-		s.Prog(v.Op.Asm())
-
-	case ssa.OpWasmF32x4Splat:
-		getValue32(s, v.Args[0])
-		s.Prog(v.Op.Asm())
-
 	default:
 		v.Fatalf("unexpected op: %s", v.Op)
 
@@ -458,13 +381,7 @@ func isCmp(v *ssa.Value) bool {
 	switch v.Op {
 	case ssa.OpWasmI64Eqz, ssa.OpWasmI64Eq, ssa.OpWasmI64Ne, ssa.OpWasmI64LtS, ssa.OpWasmI64LtU, ssa.OpWasmI64GtS, ssa.OpWasmI64GtU, ssa.OpWasmI64LeS, ssa.OpWasmI64LeU, ssa.OpWasmI64GeS, ssa.OpWasmI64GeU,
 		ssa.OpWasmF32Eq, ssa.OpWasmF32Ne, ssa.OpWasmF32Lt, ssa.OpWasmF32Gt, ssa.OpWasmF32Le, ssa.OpWasmF32Ge,
-		ssa.OpWasmF64Eq, ssa.OpWasmF64Ne, ssa.OpWasmF64Lt, ssa.OpWasmF64Gt, ssa.OpWasmF64Le, ssa.OpWasmF64Ge,
-		ssa.OpWasmI8x16Eq, ssa.OpWasmI8x16Ne, ssa.OpWasmI8x16LtS, ssa.OpWasmI8x16LtU, ssa.OpWasmI8x16GtS, ssa.OpWasmI8x16GtU, ssa.OpWasmI8x16LeS, ssa.OpWasmI8x16LeU, ssa.OpWasmI8x16GeS, ssa.OpWasmI8x16GeU,
-		ssa.OpWasmI16x8Eq, ssa.OpWasmI16x8Ne, ssa.OpWasmI16x8LtS, ssa.OpWasmI16x8LtU, ssa.OpWasmI16x8GtS, ssa.OpWasmI16x8GtU, ssa.OpWasmI16x8LeS, ssa.OpWasmI16x8LeU, ssa.OpWasmI16x8GeS, ssa.OpWasmI16x8GeU,
-		ssa.OpWasmI32x4Eq, ssa.OpWasmI32x4Ne, ssa.OpWasmI32x4LtS, ssa.OpWasmI32x4LtU, ssa.OpWasmI32x4GtS, ssa.OpWasmI32x4GtU, ssa.OpWasmI32x4LeS, ssa.OpWasmI32x4LeU, ssa.OpWasmI32x4GeS, ssa.OpWasmI32x4GeU,
-		ssa.OpWasmF32x4Eq, ssa.OpWasmF32x4Ne, ssa.OpWasmF32x4Lt, ssa.OpWasmF32x4Gt, ssa.OpWasmF32x4Le, ssa.OpWasmF32x4Ge,
-		ssa.OpWasmF64x2Eq, ssa.OpWasmF64x2Ne, ssa.OpWasmF64x2Lt, ssa.OpWasmF64x2Gt, ssa.OpWasmF64x2Le, ssa.OpWasmF64x2Ge,
-		ssa.OpWasmI64x2Eq, ssa.OpWasmI64x2Ne, ssa.OpWasmI64x2LtS, ssa.OpWasmI64x2GtS, ssa.OpWasmI64x2LeS:
+		ssa.OpWasmF64Eq, ssa.OpWasmF64Ne, ssa.OpWasmF64Lt, ssa.OpWasmF64Gt, ssa.OpWasmF64Le, ssa.OpWasmF64Ge:
 		return true
 	default:
 		return false
@@ -502,20 +419,6 @@ func getValue64(s *ssagen.State, v *ssa.Value) {
 	}
 }
 
-func getValue128(s *ssagen.State, v *ssa.Value) {
-	if v.OnWasmStack {
-		s.OnWasmStackSkipped--
-		ssaGenValueOnStack(s, v, false)
-		if !isCmp(v) {
-			s.Prog(wasm.AI32WrapI64)
-		}
-		return
-	}
-
-	reg := v.Reg()
-	getReg(s, reg)
-}
-
 func i32Const(s *ssagen.State, val int32) {
 	p := s.Prog(wasm.AI32Const)
 	p.From = obj.Addr{Type: obj.TYPE_CONST, Offset: int64(val)}
@@ -534,11 +437,6 @@ func f32Const(s *ssagen.State, val float64) {
 func f64Const(s *ssagen.State, val float64) {
 	p := s.Prog(wasm.AF64Const)
 	p.From = obj.Addr{Type: obj.TYPE_FCONST, Val: val}
-}
-
-func v128Const(s *ssagen.State, val float64) {
-	p := s.Prog(wasm.AV128Const)
-	p.From = obj.Addr{Type: obj.TYPE_CONST, Val: val}
 }
 
 func getReg(s *ssagen.State, reg int16) {
