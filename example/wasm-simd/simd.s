@@ -19,7 +19,7 @@ loop:
 		V128Load (R2)
 		V128Load (R1)
 		F32x4Mul
-		V128Store $0
+		V128Store
 
 		Get R0
 		I64Const $16
