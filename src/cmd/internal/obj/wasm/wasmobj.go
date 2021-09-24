@@ -1045,16 +1045,13 @@ func assemble(ctxt *obj.Link, s *obj.LSym, newprog obj.ProgAlloc) {
 					}
 					switch size {
 					case 8:
-						err = binary.Write(w, binary.LittleEndian, uint8(v))
+						binary.Write(w, binary.LittleEndian, uint8(v))
 					case 16:
-						err = binary.Write(w, binary.LittleEndian, uint16(v))
+						binary.Write(w, binary.LittleEndian, uint16(v))
 					case 32:
-						err = binary.Write(w, binary.LittleEndian, uint32(v))
+						binary.Write(w, binary.LittleEndian, uint32(v))
 					case 64:
-						err = binary.Write(w, binary.LittleEndian, v)
-					}
-					if err != nil {
-						panic(err.Error())
+						binary.Write(w, binary.LittleEndian, v)
 					}
 				}
 			}
