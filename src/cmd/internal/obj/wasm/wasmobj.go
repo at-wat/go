@@ -78,6 +78,15 @@ var Register = map[string]int16{
 	"F30": REG_F30,
 	"F31": REG_F31,
 
+	"V0": REG_V0,
+	"V1": REG_V1,
+	"V2": REG_V2,
+	"V3": REG_V3,
+	"V4": REG_V4,
+	"V5": REG_V5,
+	"V6": REG_V6,
+	"V7": REG_V7,
+
 	"PC_B": REG_PC_B,
 }
 
@@ -827,7 +836,7 @@ func assemble(ctxt *obj.Link, s *obj.LSym, newprog obj.ProgAlloc) {
 		}
 
 		regs := []int16{REG_SP}
-		for reg := int16(REG_R0); reg <= REG_F31; reg++ {
+		for reg := int16(REG_R0); reg <= REG_V7; reg++ {
 			if regUsed[reg-MINREG] {
 				regs = append(regs, reg)
 			}
@@ -1171,6 +1180,8 @@ func regType(reg int16) valueType {
 		return f32
 	case reg >= REG_F16 && reg <= REG_F31:
 		return f64
+	case reg >= REG_V0 && reg <= REG_V7:
+		return v128
 	default:
 		panic("invalid register")
 	}

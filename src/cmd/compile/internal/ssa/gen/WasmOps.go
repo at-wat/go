@@ -528,6 +528,7 @@ func init() {
 		fpregmask:       fp32 | fp64,
 		fp32regmask:     fp32,
 		fp64regmask:     fp64,
+		specialregmask:  vp128,
 		framepointerreg: -1, // not used
 		linkreg:         -1, // not used
 	})
