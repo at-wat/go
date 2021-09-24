@@ -873,6 +873,7 @@ func assemble(ctxt *obj.Link, s *obj.LSym, newprog obj.ProgAlloc) {
 	}
 
 	for p := s.Func().Text; p != nil; p = p.Link {
+		loadLane := false
 		switch p.As {
 		case AGet:
 			if p.From.Type != obj.TYPE_REG {
@@ -1094,6 +1095,9 @@ func assemble(ctxt *obj.Link, s *obj.LSym, newprog obj.ProgAlloc) {
 				panic("invalid v128 const type")
 			}
 
+		case AV128Load8Lane, AV128Load16Lane, AV128Load32Lane, AV128Load64Lane, AV128Store8Lane, AV128Store16Lane, AV128Store32Lane, AV128Store64Lane:
+			loadLane = true
+			fallthrough
 		case AI32Load, AI64Load, AF32Load, AF64Load, AI32Load8S, AI32Load8U, AI32Load16S, AI32Load16U, AI64Load8S, AI64Load8U, AI64Load16S, AI64Load16U, AI64Load32S, AI64Load32U, AV128Load, AV128Load8Splat, AV128Load16Splat, AV128Load32Splat, AV128Load64Splat, AV128Load32Zero, AV128Load64Zero:
 			if p.From.Offset < 0 {
 				panic("negative offset for *Load")
@@ -1107,6 +1111,22 @@ func assemble(ctxt *obj.Link, s *obj.LSym, newprog obj.ProgAlloc) {
 			writeUleb128(w, align(p.As))
 			writeUleb128(w, uint64(p.From.Offset))
 
+			if loadLane {
+				var max int64 = 2
+				switch p.As {
+				case AV128Load8Lane, AV128Store8Lane:
+					max = 16
+				case AV128Load16Lane, AV128Store16Lane:
+					max = 8
+				case AV128Load32Lane, AV128Store32Lane:
+					max = 4
+				}
+				if 0 < p.From.Offset || p.From.Offset <= max {
+					panic("immediate value out of range")
+				}
+				w.WriteByte(byte(p.To.Offset))
+			}
+
 		case AI32Store, AI64Store, AF32Store, AF64Store, AI32Store8, AI32Store16, AI64Store8, AI64Store16, AI64Store32, AV128Store:
 			if p.To.Offset < 0 {
 				panic("negative offset")
@@ -1116,6 +1136,44 @@ func assemble(ctxt *obj.Link, s *obj.LSym, newprog obj.ProgAlloc) {
 			}
 			writeUleb128(w, align(p.As))
 			writeUleb128(w, uint64(p.To.Offset))
+
+		case AI8x16ExtractLaneS, AI8x16ExtractLaneU, AI8x16ReplaceLane,
+			AI16x8ExtractLaneS, AI16x8ExtractLaneU, AI16x8ReplaceLane,
+			AI32x4ExtractLane, AI32x4ReplaceLane,
+			AI64x2ExtractLane, AI64x2ReplaceLane,
+			AF32x4ExtractLane, AF32x4ReplaceLane,
+			AF64x2ExtractLane, AF64x2ReplaceLane:
+			var max int64 = 2
+			switch p.As {
+			case AI8x16ExtractLaneS, AI8x16ExtractLaneU, AI8x16ReplaceLane:
+				max = 16
+			case AI16x8ExtractLaneS, AI16x8ExtractLaneU, AI16x8ReplaceLane:
+				max = 8
+			case AI32x4ExtractLane, AI32x4ReplaceLane, AF32x4ExtractLane, AF32x4ReplaceLane:
+				max = 4
+			}
+			if 0 < p.From.Offset || p.From.Offset <= max {
+				panic("immediate value out of range")
+			}
+			w.WriteByte(byte(p.From.Offset))
+
+		case AI8x16Shuffle:
+			// Temporary parse at here
+			// Text format: https://github.com/WebAssembly/simd/blob/main/proposals/simd/TextSIMD.md
+			imms := strings.Fields(p.From.Val.(string))
+			if len(imms) != 16 {
+				panic("wrong number of immediate values")
+			}
+			for _, imm := range imms {
+				v, err := strconv.ParseUint(imm, 0, 8)
+				if err != nil {
+					panic(err.Error())
+				}
+				if v >= 32 {
+					panic("immediate value out of range")
+				}
+				w.WriteByte(byte(v))
+			}
 
 		case ACurrentMemory, AGrowMemory:
 			w.WriteByte(0x00)
