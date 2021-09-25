@@ -7,7 +7,7 @@ simd.o: simd.s $(GO) Makefile
 bench:
 	GOOS=js GOARCH=wasm $(GO) test \
 		-exec=./go_js_wasm_exec \
-		-bench=. -test.benchtime=0.1s
+		-bench=. -test.benchtime=0.25s
 
 .PHONY: vet
 vet:
